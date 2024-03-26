@@ -147,7 +147,7 @@ final class FluentKitTests: XCTestCase {
 
         _ = try Planet.query(on: db).join(siblings: \Planet.$tags).all().wait()
         XCTAssertEqual(db.sqlSerializers.count, 1)
-        XCTAssertEqual(db.sqlSerializers.first?.sql.contains(#"INNER JOIN "planet+tag" ON "planet+tag"."planet_id" = "planets"."id""#), true, db.sqlSerializers.first?.sql ?? "")
+        XCTAssertEqual(db.sqlSerializers.first?.sql.contains(#"INNER JOIN "planet+tag" ON "planet+tag"."planet_id" = "planets"."id" AND "planet+tag"."comments" = $1"#), true)
         XCTAssertEqual(db.sqlSerializers.first?.sql.contains(#"INNER JOIN "tags" ON "planet+tag"."tag_id" = "tags"."id""#), true)
         db.reset()
     }
