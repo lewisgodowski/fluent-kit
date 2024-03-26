@@ -197,8 +197,15 @@ extension QueryBuilder {
     {
         let siblings = From()[keyPath: siblings]
         
-        return self.join(Through.self, on: siblings.from.appending(path: \.$id) == \From._$id)
-                   .join(To.self, on: siblings.to.appending(path: \.$id) == \To._$id)
+        let queryBuilder = self
+        
+        if let filter = siblings.filter {
+            queryBuilder.join(Through.self, on: siblings.from.appending(path: \.$id) == \From._$id && filter)
+        } else {
+            queryBuilder.join(Through.self, on: siblings.from.appending(path: \.$id) == \From._$id)
+        }
+        
+        return queryBuilder.join(To.self, on: siblings.to.appending(path: \.$id) == \To._$id)
     }
 
     /// This will join the foreign table based on a `@Siblings`relation

@@ -24,7 +24,12 @@ public final class Planet: Model {
     @OptionalChild(for: \.$planet)
     public var governor: Governor?
 
-    @Siblings(through: PlanetTag.self, from: \.$planet, to: \.$tag)
+    @Siblings(
+        through: PlanetTag.self,
+        from: \.$planet,
+        to: \.$tag,
+        where: \.$comments == "point of origin"
+    )
     public var tags: [Tag]
     
     @Timestamp(key: "deleted_at", on: .delete)

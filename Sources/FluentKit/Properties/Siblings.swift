@@ -21,6 +21,8 @@ public final class SiblingsProperty<From, To, Through>
 
     public let from: KeyPath<Through, Through.Parent<From>>
     public let to: KeyPath<Through, Through.Parent<To>>
+    public let filter: ModelValueFilter<Through>?
+    
     var idValue: From.IDValue?
     
     public var value: [To]?
@@ -39,7 +41,8 @@ public final class SiblingsProperty<From, To, Through>
     public init(
         through _: Through.Type,
         from: KeyPath<Through, Through.Parent<From>>,
-        to: KeyPath<Through, Through.Parent<To>>
+        to: KeyPath<Through, Through.Parent<To>>,
+        where filter: ModelValueFilter<Through>? = nil
     ) {
         guard !(From.IDValue.self is Fields.Type), !(To.IDValue.self is Fields.Type) else {
             fatalError("Can not use @Siblings with models which have composite IDs.")
@@ -47,6 +50,7 @@ public final class SiblingsProperty<From, To, Through>
 
         self.from = from
         self.to = to
+        self.filter = filter
         self._pivots = ChildrenProperty<From, Through>(for: from)
     }
 
@@ -254,10 +258,16 @@ public final class SiblingsProperty<From, To, Through>
             // TODO: Get rid of this fatalError() like we got rid of all the others.
             fatalError("Cannot query siblings relation \(self.name) from unsaved model.")
         }
-
-        return To.query(on: database)
+        
+        let query = To.query(on: database)
             .join(Through.self, on: \To._$id == self.to.appending(path: \.$id))
             .filter(Through.self, self.from.appending(path: \.$id) == fromID)
+        
+        if let filter {
+            query.filter(Through.self, filter)
+        }
+        
+        return query
     }
 }
 

@@ -70,7 +70,11 @@ public struct PlanetTagSeed: Migration {
                 default:
                     tags = []
                 }
-                return planet.$tags.attach(tags, on: database)
+                return planet.$tags.attach(tags, on: database) { pivot in
+                    if planet.name == "Earth" {
+                        pivot.comments = "point of origin"
+                    }
+                }
             }, on: database.eventLoop)
         }
     }
